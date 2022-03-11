@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:xml/xml.dart';
 
 import 'cos_clientbase.dart';
@@ -8,7 +9,7 @@ import 'cos_comm.dart';
 import "cos_config.dart";
 import 'cos_exception.dart';
 import "cos_model.dart";
-
+import 'package:path/path.dart';
 class COSClient extends COSClientBase {
   COSClient(COSConfig _config) : super(_config);
 
@@ -24,13 +25,18 @@ class COSClient extends COSClientBase {
     return ListBucketResult(content.rootElement);
   }
 
-  Future<String?> putObject(String objectKey, String filePath,
-      {String? token}) async {
+  Future<String?> putObject(String filePath,
+      {String? objectKey, String? token}) async {
     cosLog("putObject");
     var f = File(filePath);
     int flength = await f.length();
     var fs = f.openRead();
-    var req = await getRequest("PUT", objectKey,
+    if(objectKey == null){
+      final _md5 = await md5.bind(fs).first;
+      final _ext = extension(filePath);
+      objectKey = "$_md5$_ext";
+    }
+    var req = await getRequest("PUT", objectKey!,
         headers: {
           "content-type": "image/jpeg",
           "content-length": flength.toString()
