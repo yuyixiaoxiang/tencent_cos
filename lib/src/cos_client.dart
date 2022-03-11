@@ -32,11 +32,11 @@ class COSClient extends COSClientBase {
     int flength = await f.length();
     var fs = f.openRead();
     if(objectKey == null){
-      final _md5 = await md5.bind(fs).first;
+      final _md5 = await md5.bind(f.openRead()).first;
       final _ext = extension(filePath);
       objectKey = "$_md5$_ext";
     }
-    var req = await getRequest("PUT", objectKey!,
+    var req = await getRequest("PUT", objectKey,
         headers: {
           "content-type": "image/jpeg",
           "content-length": flength.toString()
